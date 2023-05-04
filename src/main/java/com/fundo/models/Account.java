@@ -70,8 +70,4 @@ public class Account {
         holding.put(symbol, currentAmount - stockAmount);
         this.usdAmount += usdAmount;
     }
-
-    public Hashtable<String, Double> getHolding() {
-        return this.holding;
-    }
 }

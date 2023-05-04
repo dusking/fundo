@@ -1,11 +1,9 @@
 package com.fundo.api;
 
-import com.fundo.config.AppConfig;
-import com.fundo.exception.missingAccountException;
 import com.fundo.exception.missingUserException;
-import com.fundo.models.Account;
 import com.fundo.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -19,13 +17,13 @@ public class UserController {
 
 	private MongoTemplate mongoTemplate;
 
+	@Value("${app.name}")
+	private String appName;
+
 	@Autowired
 	public UserController(MongoTemplate mongoTemplate) {
 		this.mongoTemplate = mongoTemplate;
 	}
-
-	@Autowired
-	private AppConfig appDetails;
 
 	User getUser(String username) throws missingUserException {
 		User user = this.mongoTemplate.findOne(Query.query(Criteria.where("username").is(username)),
@@ -38,7 +36,7 @@ public class UserController {
 
 	@GetMapping("/")
 	public String index() {
-		return "Hello";
+		return "Welcome to " + appName;
 	}
 
 	@GetMapping("{username}")

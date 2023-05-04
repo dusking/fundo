@@ -1,6 +1,6 @@
 # FundO Application
 
-A web application written in Java, using Spring Boot and maven.
+A web application written in Java 18.0.2, using Spring Boot v3.0.0 with Tomcat as the servlet container.
 The app uses Spring Data MongoDB.
 
 ## Application Functionality

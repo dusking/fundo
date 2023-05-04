@@ -7,6 +7,7 @@ import com.mongodb.client.MongoClients;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
@@ -16,7 +17,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 public class MongoConfig {
 
     @Autowired
-    private AppConfig appDetails;
+    private Environment env;
 
     @Bean
     public MongoClient mongo() {
@@ -30,15 +31,15 @@ public class MongoConfig {
 
     @Bean
     public MongoTemplate mongoTemplate() throws Exception {
-        String databaseName = "test";
+        String databaseName = env.getProperty("spring.mongo.dbname");
         return new MongoTemplate(mongo(), databaseName);
     }
 
     public String getMongoConnectionUri() {
-        String username = System.getenv("MONGO_USERNAME");
-        String password = System.getenv("MONGO_PASSWORD");
-        String host = "cluster0.qzji9ua.mongodb.net";
-        String arguments = "retryWrites=true&w=majority";
+        String username = env.getProperty("spring.mongo.username");
+        String password = env.getProperty("spring.mongo.password");
+        String host = env.getProperty("spring.mongo.host");
+        String arguments = env.getProperty("spring.mongo.arguments");
         return String.format("mongodb+srv://%s:%s@%s/?%s", username, password, host, arguments);
     }
 }
