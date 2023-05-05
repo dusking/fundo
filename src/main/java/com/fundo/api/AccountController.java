@@ -10,7 +10,6 @@ import com.fundo.requests.SellRequest;
 import com.fundo.requests.WithdrawRequest;
 import com.fundo.utils.MarketClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;

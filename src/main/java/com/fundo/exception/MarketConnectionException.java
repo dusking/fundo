@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
 public class MarketConnectionException extends Exception {
+    private String message;
+
     public MarketConnectionException() {
         super();
         this.message = "Invalid market request.";
@@ -16,7 +18,6 @@ public class MarketConnectionException extends Exception {
         this.message = "Bad market connection. " + message;
     }
 
-    private String message;
     public String getMessage() {
         return message;
     }

@@ -5,18 +5,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
 public class invalidMarketRequestException extends Exception {
+    private String message;
 
     public invalidMarketRequestException() {
         super();
         this.message = "Invalid market request.";
     }
 
-    public invalidMarketRequestException(String message) {
-        super();
-        this.message = "Invalid market request. " + message;
-    }
-
-    private String message;
     public String getMessage() {
         return message;
     }

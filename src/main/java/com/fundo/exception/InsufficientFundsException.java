@@ -5,11 +5,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
 public class InsufficientFundsException extends Exception {
+    private String message;
+
     public InsufficientFundsException(String message) {
         super();
         this.message = message;
     }
-    private String message;
+
     public String getMessage() {
         return message;
     }

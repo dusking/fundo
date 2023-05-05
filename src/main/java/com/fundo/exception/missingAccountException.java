@@ -6,11 +6,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
 public class missingAccountException extends Exception{
+    private String message;
+
     public missingAccountException(String accountId) {
         super();
         this.message = String.format("Missing Account %s", accountId);
     }
-    private String message;
+
     public String getMessage() {
         return message;
     }
