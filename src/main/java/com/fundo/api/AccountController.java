@@ -10,6 +10,7 @@ import com.fundo.requests.SellRequest;
 import com.fundo.requests.WithdrawRequest;
 import com.fundo.utils.MarketClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -23,6 +24,9 @@ import org.springframework.web.bind.annotation.*;
 public class AccountController {
 
     private MongoTemplate mongoTemplate;
+
+    @Autowired
+    private MarketClient marketClient;
 
     @Autowired
     public AccountController(MongoTemplate mongoTemplate) {
@@ -99,7 +103,7 @@ public class AccountController {
         Transaction transaction = new Transaction();
         transaction.setBuy(buyRequest.accountId, buyRequest.symbol, buyRequest.usdAmount);
         try {
-            double currentPrice = new MarketClient().getStockQuote(buyRequest.symbol);
+            double currentPrice = marketClient.getStockQuote(buyRequest.symbol);
             double stockAmount = buyRequest.usdAmount / currentPrice;
             transaction.setStockAmount(stockAmount);
             Account account = getAccount(buyRequest.accountId);

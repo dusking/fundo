@@ -34,9 +34,8 @@ public class MarketClient {
             clientInfo.put("host", env.getProperty("spring.api.host"));
             clientInfo.put("endpoint", env.getProperty("spring.api.endpoint"));
             clientInfo.put("key", env.getProperty("spring.api.key"));
-            System.out.printf("############## %s", clientInfo);
         } catch(Exception e) {
-            System.out.printf("############## %s", e.getMessage());
+            System.out.printf("Failed to get client info ", e.getMessage());
         }
         return clientInfo;
     }
@@ -54,12 +53,13 @@ public class MarketClient {
     }
 
     public double getStockQuote(String symbol) throws MarketConnectionException, JsonProcessingException {
-//        System.out.printf("############## %s\n", marketClientInfo());
+        HashMap<String, String> clientInfo = marketClientInfo();
+        System.out.printf("marketClientInfo host: %s", clientInfo.get("host"));
 
         return 10;
-//        String rapidApiHost = "twelve-data1.p.rapidapi.com";
-//        String RapidApiEndpoint = "https://twelve-data1.p.rapidapi.com/price";
-//        String rapidApiKey = "oBvV4zrXWCmshhQrYwgfKYLtzPIEp1nfsjBjsnLNYBQDnQft8M";
+//        String rapidApiHost = clientInfo.get("host");
+//        String RapidApiEndpoint = clientInfo.get("endpoint");
+//        String rapidApiKey = clientInfo.get("key");
 //
 //        HttpRequest request = HttpRequest.newBuilder()
 //                .uri(URI.create(RapidApiEndpoint + "?symbol=" + symbol + "&format=json&outputsize=30"))
