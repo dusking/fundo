@@ -21,6 +21,7 @@ public class Transaction {
     public Transaction() {
         this.createdUtc = new Date();
         this.status = TransactionStatus.INIT;
+        this.usdAmount = 0.0;
     }
 
     public Hashtable<String, String> getData() {
@@ -46,11 +47,11 @@ public class Transaction {
         this.usdAmount = usdAmount;
     }
 
-    public void setBuy(String accountId, String symbol, double stockAmount) {
+    public void setBuy(String accountId, String symbol, double usdAmount) {
         this.action = TransactionType.BUY;
         this.accountId = accountId;
         this.symbol = symbol;
-        this.stockAmount = stockAmount;
+        this.usdAmount = usdAmount;
     }
 
     public void setStockAmount(double stockAmount) {
@@ -61,12 +62,11 @@ public class Transaction {
         this.usdAmount = usdAmount;
     }
 
-    public void setSell(String accountId, String symbol, double stockAmount, double usdAmount) {
+    public void setSell(String accountId, String symbol, double stockAmount) {
         this.action = TransactionType.SELL;
         this.accountId = accountId;
         this.symbol = symbol;
         this.stockAmount = stockAmount;
-        this.usdAmount = usdAmount;
     }
 
     public void setWithdraw(String accountId, double usdAmount) {

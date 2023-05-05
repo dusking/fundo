@@ -53,6 +53,10 @@ public class Account {
         return usdAmount >= this.usdAmount;
     }
 
+    public Hashtable<String, Double> getHolding() {
+        return this.holding;
+    }
+
     public void buy(final String symbol, double stockAmount, double usdAmount) throws InsufficientFundsException {
         if (this.usdAmount < usdAmount) {
             throw new InsufficientFundsException("Failed to buy " + symbol);

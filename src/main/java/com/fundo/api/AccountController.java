@@ -1,6 +1,5 @@
 package com.fundo.api;
 
-import com.fundo.exception.InsufficientFundsException;
 import com.fundo.exception.missingAccountException;
 import com.fundo.models.Account;
 import com.fundo.models.Transaction;
@@ -9,6 +8,7 @@ import com.fundo.requests.BuyRequest;
 import com.fundo.requests.DepositRequest;
 import com.fundo.requests.SellRequest;
 import com.fundo.requests.WithdrawRequest;
+import com.fundo.utils.MarketClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -16,12 +16,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpClient;
-import java.io.IOException;
 
 
 @RestController
@@ -105,7 +99,7 @@ public class AccountController {
         Transaction transaction = new Transaction();
         transaction.setBuy(buyRequest.accountId, buyRequest.symbol, buyRequest.usdAmount);
         try {
-            int currentPrice = 10;
+            double currentPrice = new MarketClient().getStockQuote(buyRequest.symbol);
             double stockAmount = buyRequest.usdAmount / currentPrice;
             transaction.setStockAmount(stockAmount);
             Account account = getAccount(buyRequest.accountId);
@@ -122,12 +116,12 @@ public class AccountController {
         }
     }
 
-    @GetMapping("sell/")
+    @PostMapping("sell/")
     public ResponseEntity<Transaction> sell(@RequestBody SellRequest sellRequest) {
         Transaction transaction = new Transaction();
-        transaction.setBuy(sellRequest.accountId, sellRequest.symbol, sellRequest.stockAmount);
+        transaction.setSell(sellRequest.accountId, sellRequest.symbol, sellRequest.stockAmount);
         try {
-            int currentPrice = 10;
+            double currentPrice = new MarketClient().getStockQuote(sellRequest.symbol);
             double usdAmount = sellRequest.stockAmount * currentPrice;
             transaction.setUsdAmount(usdAmount);
             Account account = getAccount(sellRequest.accountId);
@@ -142,25 +136,5 @@ public class AccountController {
             System.out.printf("Transaction Failed %s", transaction.getData());
             return new ResponseEntity<>(transaction, HttpStatus.EXPECTATION_FAILED);
         }
-    }
-
-    public static void getStockQuote(String symbol) {
-        String rapidApiHost = "twelve-data1.p.rapidapi.com";
-        String RapidApiEndpoint = "https://twelve-data1.p.rapidapi.com/price";
-        String rapidApiKey = "oBvV4zrXWCmshhQrYwgfKYLtzPIEp1nfsjBjsnLNYBQDnQft8M";
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(RapidApiEndpoint + "?symbol=" + symbol + "&format=json&outputsize=30"))
-                .header("X-RapidAPI-Key", rapidApiKey)
-                .header("X-RapidAPI-Host", rapidApiHost)
-                .method("GET", HttpRequest.BodyPublishers.noBody())
-                .build();
-        HttpResponse<String> response = null;
-        try {
-            response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println(response.body());
     }
 }
