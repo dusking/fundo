@@ -2,6 +2,7 @@ package com.fundo.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fundo.config.MarketClientConfig;
 import com.fundo.exception.MarketConnectionException;
 import com.fundo.exception.invalidMarketRequestException;
 import com.fundo.requests.MarketStockQuoteRequest;
@@ -22,23 +23,7 @@ import java.util.HashMap;
 public class MarketClient {
 
     @Autowired
-    private Environment env;
-
-    public MarketClient() {
-
-    }
-
-    public HashMap<String, String> marketClientInfo() {
-        HashMap<String, String> clientInfo = new HashMap<>();
-        try{
-            clientInfo.put("host", env.getProperty("spring.api.host"));
-            clientInfo.put("endpoint", env.getProperty("spring.api.endpoint"));
-            clientInfo.put("key", env.getProperty("spring.api.key"));
-        } catch(Exception e) {
-            System.out.printf("Failed to get client info ", e.getMessage());
-        }
-        return clientInfo;
-    }
+    private MarketClientConfig marketClientConfig;
 
     public void buy(String symbol, double amount) throws invalidMarketRequestException {
         if (amount < 0) {
@@ -53,13 +38,13 @@ public class MarketClient {
     }
 
     public double getStockQuote(String symbol) throws MarketConnectionException, JsonProcessingException {
-        HashMap<String, String> clientInfo = marketClientInfo();
-        System.out.printf("marketClientInfo host: %s", clientInfo.get("host"));
+        marketClientConfig.setEnv();
+        System.out.printf("marketClientInfo : %s", marketClientConfig.host);
 
         return 10;
-//        String rapidApiHost = clientInfo.get("host");
-//        String RapidApiEndpoint = clientInfo.get("endpoint");
-//        String rapidApiKey = clientInfo.get("key");
+//        String rapidApiHost = marketClientConfig.host;
+//        String RapidApiEndpoint = marketClientConfig.endpoint;
+//        String rapidApiKey = marketClientConfig.apiKey;
 //
 //        HttpRequest request = HttpRequest.newBuilder()
 //                .uri(URI.create(RapidApiEndpoint + "?symbol=" + symbol + "&format=json&outputsize=30"))
