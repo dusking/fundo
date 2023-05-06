@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 public class Account {
