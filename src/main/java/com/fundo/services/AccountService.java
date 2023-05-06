@@ -5,29 +5,24 @@ import com.fundo.exception.*;
 import com.fundo.models.Account;
 import com.fundo.models.Transaction;
 import com.fundo.models.User;
-import com.fundo.requests.DepositRequest;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 public class AccountService {
-    private MongoTemplate mongoTemplate;
+    private final MongoTemplate mongoTemplate;
 
-    private final exchangeService exchangeService;
+    private final ExchangeService exchangeService;
 
-    private static Logger logger = LoggerFactory.getLogger(AccountService.class);
+    private final static Logger logger = LoggerFactory.getLogger(AccountService.class);
 
     @Autowired
-    public AccountService(MongoTemplate mongoTemplate, exchangeService exchangeService) {
+    public AccountService(MongoTemplate mongoTemplate, ExchangeService exchangeService) {
         this.mongoTemplate = mongoTemplate;
         this.exchangeService = exchangeService;
     }

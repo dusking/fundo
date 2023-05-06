@@ -2,10 +2,11 @@ package com.fundo.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fundo.config.MarketClientConfig;
 import com.fundo.exception.MarketConnectionException;
 import com.fundo.exception.invalidMarketRequestException;
 import com.fundo.requests.MarketStockQuoteResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,18 +19,24 @@ import java.net.http.HttpResponse;
 
 
 @Service
-public class exchangeService {
+public class ExchangeService {
+    private final String rapidMarketApiHost;
 
-    private MarketClientConfig marketClientConfig;
+    private final String rapidMarketApiEndpoint;
 
-    private String marketApiHost;
+    private final String rapidMarketApiKey;
 
     private final static ObjectMapper objectMapper = new ObjectMapper();
 
+    private final static Logger logger = LoggerFactory.getLogger(ExchangeService.class);
+
     @Autowired
-    public exchangeService(MarketClientConfig marketClientConfig, @Value("${market.api.host}") String marketApiHost) {
-        this.marketClientConfig = marketClientConfig;
-        this.marketApiHost = marketApiHost;
+    public ExchangeService(@Value("${rapid.marketApi.host}") String rapidMarketApiHost,
+                           @Value("${rapid.marketApi.endpoint}") String rapidMarketApiEndpoint,
+                           @Value("${rapid.marketApi.key}") String rapidMarketApiKey) {
+        this.rapidMarketApiHost = rapidMarketApiHost;
+        this.rapidMarketApiEndpoint = rapidMarketApiEndpoint;
+        this.rapidMarketApiKey = rapidMarketApiKey;
     }
 
     public void buy(String symbol, double amount) throws invalidMarketRequestException {
@@ -45,21 +52,14 @@ public class exchangeService {
     }
 
     public double getStockQuote(String symbol) throws MarketConnectionException, JsonProcessingException {
-        marketClientConfig.setEnv();
-        System.out.printf("marketClientInfo : %s", marketClientConfig.host);
-
 //        return 10;
-        String rapidApiHost = marketApiHost;
-        String RapidApiEndpoint = marketClientConfig.endpoint;
-        String rapidApiKey = marketClientConfig.apiKey;
-
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(RapidApiEndpoint + "?symbol=" + symbol + "&format=json&outputsize=30"))
-                .header("X-RapidAPI-Key", rapidApiKey)
-                .header("X-RapidAPI-Host", rapidApiHost)
+                .uri(URI.create(rapidMarketApiEndpoint + "?symbol=" + symbol + "&format=json&outputsize=30"))
+                .header("X-RapidAPI-Key", rapidMarketApiKey)
+                .header("X-RapidAPI-Host", rapidMarketApiHost)
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build();
-        HttpResponse<String> response = null;
+        HttpResponse<String> response;
         try {
             response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
@@ -68,7 +68,7 @@ public class exchangeService {
 
         String json = response.body();
         MarketStockQuoteResponse market = objectMapper.readValue(json, MarketStockQuoteResponse.class);
-        System.out.printf("Got %s quote: %s%n", symbol, market.price);
+        logger.info(String.format("Got %s quote: %s%n", symbol, market.price));
         return market.price;
     }
 }
