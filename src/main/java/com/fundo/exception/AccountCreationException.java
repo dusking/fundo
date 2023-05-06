@@ -4,12 +4,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
-public class missingUserException extends Exception {
+public class AccountCreationException extends Exception {
     private String message;
 
-    public missingUserException(String username) {
+    public AccountCreationException(String message) {
         super();
-        this.message = String.format("Missing User %s", username);
+        this.message = message;
     }
 
     public String getMessage() {

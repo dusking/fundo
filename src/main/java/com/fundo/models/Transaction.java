@@ -6,6 +6,8 @@ import org.springframework.data.annotation.Id;
 
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Map;
+
 
 public class Transaction {
     @Id
@@ -24,7 +26,7 @@ public class Transaction {
         this.usdAmount = 0.0;
     }
 
-    public Hashtable<String, String> getData() {
+    public Map<String, String> getData() {
         Hashtable<String, String> response  = new Hashtable<>();
         response.put("id", this.id);
         response.put("createdUtc", this.createdUtc.toString());

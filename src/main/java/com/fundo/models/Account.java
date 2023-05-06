@@ -5,7 +5,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
 
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 public class Account {
     @Id
@@ -15,7 +17,8 @@ public class Account {
     private String ownerId;
 
     private double usdAmount;
-    private Hashtable<String, Double> holding  = new Hashtable<String, Double>();
+
+    private Map<String, Double> holding  = new HashMap<>();
 
     public Account() {
     }
@@ -53,7 +56,7 @@ public class Account {
         return usdAmount >= this.usdAmount;
     }
 
-    public Hashtable<String, Double> getHolding() {
+    public Map<String, Double> getHolding() {
         return this.holding;
     }
 

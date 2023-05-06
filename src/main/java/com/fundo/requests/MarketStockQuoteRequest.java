@@ -4,7 +4,6 @@ public class MarketStockQuoteRequest {
     public double price;
 
     public MarketStockQuoteRequest() {
-
     }
 
     public MarketStockQuoteRequest(String price) {

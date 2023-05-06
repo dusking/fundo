@@ -1,6 +1,7 @@
 package com.fundo.api;
 
-import com.fundo.exception.missingAccountException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fundo.exception.*;
 import com.fundo.models.Account;
 import com.fundo.models.Transaction;
 import com.fundo.models.User;
@@ -8,7 +9,10 @@ import com.fundo.requests.BuyRequest;
 import com.fundo.requests.DepositRequest;
 import com.fundo.requests.SellRequest;
 import com.fundo.requests.WithdrawRequest;
-import com.fundo.utils.MarketClient;
+import com.fundo.services.AccountService;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -22,122 +26,57 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/account")
 public class AccountController {
 
-    private MongoTemplate mongoTemplate;
+    private final MongoTemplate mongoTemplate;
+
+    private final AccountService accountService;
+
+    private final static Logger logger = LoggerFactory.getLogger(AccountController.class);
 
     @Autowired
-    private MarketClient marketClient;
-
-    @Autowired
-    public AccountController(MongoTemplate mongoTemplate) {
+    public AccountController(MongoTemplate mongoTemplate, AccountService accountService) {
         this.mongoTemplate = mongoTemplate;
-    }
-
-    Account getAccount(String accountId) throws missingAccountException{
-        Account account = this.mongoTemplate.findOne(Query.query(Criteria.where("id").is(accountId)),
-                Account.class);
-        if (account == null) {
-            throw new missingAccountException(accountId);
-        }
-        return account;
+        this.accountService = accountService;
     }
 
     @GetMapping("create/")
-    public ResponseEntity<String> create(@RequestParam("ownerName") String username) {
-        User user = this.mongoTemplate.findOne(Query.query(Criteria.where("username").is(username)),
-                User.class);
-        if (user == null) {
-            return new ResponseEntity<>(String.format("Username %s does not exists", username), HttpStatus.NOT_FOUND);
-        }
-        System.out.println("Creating a new account for user");
-        Account account = new Account(user.getId());
-        this.mongoTemplate.insert(account);
-        return new ResponseEntity<>("Great Success!", HttpStatus.CREATED);
+    public ResponseEntity<Account> create(@RequestParam("ownerName") String username)
+            throws MissingUserException, AccountCreationException {
+        User user = this.mongoTemplate.findOne(Query.query(Criteria.where("username").is(username)), User.class);
+        if (user == null)
+            throw new MissingUserException(username);
+        return new ResponseEntity<>(accountService.create(user), HttpStatus.CREATED);
     }
 
     @GetMapping("{id}")
-    public Account get(@PathVariable ("id" )String accountId) throws missingAccountException {
-        return getAccount(accountId);
+    public ResponseEntity<Account> get(@PathVariable ("id" )String accountId) throws missingAccountException {
+        return new ResponseEntity<>(accountService.getAccount(accountId), HttpStatus.OK);
     }
 
     @PostMapping("deposit/")
-    public ResponseEntity<Account> deposit(@RequestBody DepositRequest depositRequest) {
-        Transaction transaction = new Transaction();
-        transaction.setDeposit(depositRequest.accountId, depositRequest.usdAmount);
-        try {
-            Account account = getAccount(depositRequest.accountId);
-            account.deposit(depositRequest.usdAmount);
-            transaction.setSuccess();
-            this.mongoTemplate.save(transaction);
-            this.mongoTemplate.save(account);
-            return new ResponseEntity<>(account, HttpStatus.OK);
-        } catch(Exception e) {
-            transaction.setFailure();
-            this.mongoTemplate.save(transaction);
-            System.out.printf("Transaction Failed %s", transaction.getData());
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
-        }
+    public ResponseEntity<Transaction> deposit(@Valid @RequestBody DepositRequest depositRequest)
+            throws missingAccountException{
+        Transaction transaction = accountService.deposit(depositRequest.accountId, depositRequest.usdAmount);
+        return new ResponseEntity<>(transaction, HttpStatus.OK);
     }
 
     @PostMapping("withdraw/")
-    public ResponseEntity<Transaction> withdraw(@RequestBody WithdrawRequest withdrawRequest)  {
-        Transaction transaction = new Transaction();
-        transaction.setWithdraw(withdrawRequest.accountId, withdrawRequest.usdAmount);
-        try {
-            Account account = getAccount(withdrawRequest.accountId);
-            account.withdraw(withdrawRequest.usdAmount);
-            transaction.setSuccess();
-            this.mongoTemplate.save(transaction);
-            this.mongoTemplate.save(account);
-            return new ResponseEntity<>(transaction, HttpStatus.OK);
-        } catch(Exception e) {
-            transaction.setFailure();
-            this.mongoTemplate.save(transaction);
-            System.out.printf("Transaction Failed %s", transaction.getData());
-            return new ResponseEntity<>(transaction, HttpStatus.EXPECTATION_FAILED);
-        }
+    public ResponseEntity<Transaction> withdraw(@RequestBody WithdrawRequest withdrawRequest)
+            throws InsufficientFundsException, missingAccountException {
+        Transaction transaction = accountService.withdraw(withdrawRequest.accountId, withdrawRequest.usdAmount);
+        return new ResponseEntity<>(transaction, HttpStatus.OK);
     }
 
     @PostMapping("buy/")
-    public ResponseEntity<Transaction> buy(@RequestBody BuyRequest buyRequest){
-        Transaction transaction = new Transaction();
-        transaction.setBuy(buyRequest.accountId, buyRequest.symbol, buyRequest.usdAmount);
-        try {
-            double currentPrice = marketClient.getStockQuote(buyRequest.symbol);
-            double stockAmount = buyRequest.usdAmount / currentPrice;
-            transaction.setStockAmount(stockAmount);
-            Account account = getAccount(buyRequest.accountId);
-            account.buy(buyRequest.symbol, stockAmount, buyRequest.usdAmount);
-            transaction.setSuccess();
-            this.mongoTemplate.save(transaction);
-            this.mongoTemplate.save(account);
-            return new ResponseEntity<>(transaction, HttpStatus.OK);
-        } catch(Exception e) {
-            transaction.setFailure();
-            this.mongoTemplate.save(transaction);
-            System.out.printf("Transaction Failed %s", transaction.getData());
-            return new ResponseEntity<>(transaction, HttpStatus.EXPECTATION_FAILED);
-        }
+    public ResponseEntity<Transaction> buy(@RequestBody BuyRequest buyRequest)
+            throws MarketConnectionException, InsufficientFundsException, invalidMarketRequestException, missingAccountException, JsonProcessingException {
+        Transaction transaction = accountService.buy(buyRequest.accountId, buyRequest.symbol, buyRequest.usdAmount);
+        return new ResponseEntity<>(transaction, HttpStatus.OK);
     }
 
     @PostMapping("sell/")
-    public ResponseEntity<Transaction> sell(@RequestBody SellRequest sellRequest) {
-        Transaction transaction = new Transaction();
-        transaction.setSell(sellRequest.accountId, sellRequest.symbol, sellRequest.stockAmount);
-        try {
-            double currentPrice = new MarketClient().getStockQuote(sellRequest.symbol);
-            double usdAmount = sellRequest.stockAmount * currentPrice;
-            transaction.setUsdAmount(usdAmount);
-            Account account = getAccount(sellRequest.accountId);
-            account.sell(sellRequest.symbol, sellRequest.stockAmount, usdAmount);
-            transaction.setSuccess();
-            this.mongoTemplate.save(transaction);
-            this.mongoTemplate.save(account);
-            return new ResponseEntity<>(transaction, HttpStatus.OK);
-        } catch(Exception e) {
-            transaction.setFailure();
-            this.mongoTemplate.save(transaction);
-            System.out.printf("Transaction Failed %s", transaction.getData());
-            return new ResponseEntity<>(transaction, HttpStatus.EXPECTATION_FAILED);
-        }
+    public ResponseEntity<Transaction> sell(@RequestBody SellRequest sellRequest)
+            throws MarketConnectionException, InsufficientFundsException, invalidMarketRequestException, missingAccountException, JsonProcessingException {
+        Transaction transaction = accountService.sell(sellRequest.accountId, sellRequest.symbol, sellRequest.stockAmount);
+        return new ResponseEntity<>(transaction, HttpStatus.OK);
     }
 }

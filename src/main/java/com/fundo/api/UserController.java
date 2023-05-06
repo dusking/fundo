@@ -1,6 +1,6 @@
 package com.fundo.api;
 
-import com.fundo.exception.missingUserException;
+import com.fundo.exception.MissingUserException;
 import com.fundo.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,11 +26,11 @@ public class UserController {
 		this.mongoTemplate = mongoTemplate;
 	}
 
-	User getUser(String username) throws missingUserException {
+	User getUser(String username) throws MissingUserException {
 		User user = this.mongoTemplate.findOne(Query.query(Criteria.where("username").is(username)),
 				User.class);
 		if (user == null) {
-			throw new missingUserException(username);
+			throw new MissingUserException(username);
 		}
 		return user;
 	}
@@ -41,7 +41,7 @@ public class UserController {
 	}
 
 	@GetMapping("{username}")
-	public User get(@PathVariable("username" )String username) throws missingUserException {
+	public User get(@PathVariable("username" )String username) throws MissingUserException {
 		return getUser(username);
 	}
 
