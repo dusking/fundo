@@ -1,17 +1,15 @@
 package com.fundo.requests;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 
 
 public class DepositRequest {
 
-    @NotEmpty(message = "The accountId is required.")
-    @NotNull(message = "The accountId is required.")
+    @NotEmpty(message = "accountId cannot be null")
     public String accountId;
 
-    @Positive()
+    @Min(value = 1, message = "usdAmount should not be less than 1")
+    @Max(value = 1000, message = "usdAmount should not be greater than 1000")
     public double usdAmount;
 
     public DepositRequest(String accountId, double usdAmount) {

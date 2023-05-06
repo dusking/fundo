@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fundo.config.MarketClientConfig;
 import com.fundo.exception.MarketConnectionException;
 import com.fundo.exception.invalidMarketRequestException;
-import com.fundo.requests.MarketStockQuoteRequest;
+import com.fundo.requests.MarketStockQuoteResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -67,7 +67,7 @@ public class exchangeService {
         }
 
         String json = response.body();
-        MarketStockQuoteRequest market = objectMapper.readValue(json, MarketStockQuoteRequest.class);
+        MarketStockQuoteResponse market = objectMapper.readValue(json, MarketStockQuoteResponse.class);
         System.out.printf("Got %s quote: %s%n", symbol, market.price);
         return market.price;
     }
