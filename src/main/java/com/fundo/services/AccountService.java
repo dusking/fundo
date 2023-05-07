@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+
 @Service
 public class AccountService {
     private final MongoTemplate mongoTemplate;
@@ -53,7 +54,7 @@ public class AccountService {
         transaction.setDeposit(accountId, usdAmount);
         try {
             Account account = getAccount(accountId);
-            account.deposit(usdAmount);
+            account.addUsdAmount(usdAmount);
             transaction.setSuccess();
             this.mongoTemplate.save(transaction);
             this.mongoTemplate.save(account);
@@ -61,7 +62,7 @@ public class AccountService {
         } catch(Exception e) {
             transaction.setFailure();
             this.mongoTemplate.save(transaction);
-            logger.info(String.format("Transaction Failed %s", transaction.getData()));
+            logger.error("Transaction Failed", e);
             throw e;
         }
     }
@@ -72,7 +73,9 @@ public class AccountService {
         transaction.setWithdraw(accountId, usdAmount);
         try {
             Account account = getAccount(accountId);
-            account.withdraw(usdAmount);
+            if (usdAmount > account.getUsdAmount())
+                throw new InsufficientFundsException("Failed to withdraw");
+            account.addUsdAmount(-usdAmount);
             transaction.setSuccess();
             this.mongoTemplate.save(transaction);
             this.mongoTemplate.save(account);
@@ -80,7 +83,7 @@ public class AccountService {
         } catch(Exception e) {
             transaction.setFailure();
             this.mongoTemplate.save(transaction);
-            logger.info(String.format("Transaction Failed %s", transaction.getData()));
+            logger.error("Transaction Failed", e);
             throw e;
         }
     }
@@ -90,12 +93,16 @@ public class AccountService {
         Transaction transaction = new Transaction();
         transaction.setBuy(accountId, symbol, usdAmount);
         try {
+            // ToDo: Implement db transaction
             double currentPrice = exchangeService.getStockQuote(symbol);
             double stockAmount = usdAmount / currentPrice;
             transaction.setStockAmount(stockAmount);
             Account account = getAccount(accountId);
+            if (account.getUsdAmount() < usdAmount)
+                throw new InsufficientFundsException("Failed to buy " + symbol);
+            account.addHolding(symbol, stockAmount);
+            account.addUsdAmount(-usdAmount);
             exchangeService.buy(symbol, stockAmount);
-            account.buy(symbol, stockAmount, usdAmount);
             transaction.setSuccess();
             this.mongoTemplate.save(transaction);
             this.mongoTemplate.save(account);
@@ -103,7 +110,7 @@ public class AccountService {
         } catch(Exception e) {
             transaction.setFailure();
             this.mongoTemplate.save(transaction);
-            logger.info(String.format("Transaction Failed %s", transaction.getData()));
+            logger.error("Transaction Failed", e);
             throw e;
         }
     }
@@ -113,12 +120,17 @@ public class AccountService {
         Transaction transaction = new Transaction();
         transaction.setSell(accountId, symbol, stockAmount);
         try {
+            // ToDo: Implement db transaction
             double currentPrice = exchangeService.getStockQuote(symbol);
             double usdAmount = stockAmount * currentPrice;
             transaction.setUsdAmount(usdAmount);
             Account account = getAccount(accountId);
+            double currentAmount = account.getHolding(symbol);
+            if (currentAmount < stockAmount)
+                throw new InsufficientFundsException("Failed to sell " + symbol);
+            account.addHolding(symbol, -stockAmount);
+            account.addUsdAmount(usdAmount);
             exchangeService.sell(symbol, stockAmount);
-            account.sell(symbol, stockAmount, usdAmount);
             transaction.setSuccess();
             this.mongoTemplate.save(transaction);
             this.mongoTemplate.save(account);
@@ -126,7 +138,7 @@ public class AccountService {
         } catch(Exception e) {
             transaction.setFailure();
             this.mongoTemplate.save(transaction);
-            logger.info(String.format("Transaction Failed %s", transaction.getData()));
+            logger.error("Transaction Failed", e);
             throw e;
         }
     }

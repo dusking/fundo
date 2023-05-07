@@ -12,6 +12,8 @@ public class DepositRequest {
     @Max(value = 1000, message = "usdAmount should not be greater than 1000")
     public double usdAmount;
 
+    public DepositRequest() {}
+
     public DepositRequest(String accountId, double usdAmount) {
         this.accountId = accountId;
         this.usdAmount = usdAmount;

@@ -7,7 +7,9 @@ public class CreateAccountRequest {
     @NotEmpty(message = "username cannot be null or empty")
     public String ownerName;
 
-    public CreateAccountRequest(String username) {
-        this.ownerName = username;
+    public CreateAccountRequest() {}
+
+    public CreateAccountRequest(String ownerName) {
+        this.ownerName = ownerName;
     }
 }

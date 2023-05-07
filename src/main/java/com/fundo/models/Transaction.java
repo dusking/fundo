@@ -1,12 +1,11 @@
 package com.fundo.models;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fundo.enums.TransactionStatus;
 import com.fundo.enums.TransactionType;
 import org.springframework.data.annotation.Id;
 
 import java.util.Date;
-import java.util.Hashtable;
-import java.util.Map;
 
 
 public class Transaction {
@@ -15,10 +14,13 @@ public class Transaction {
     private Date createdUtc;
     private String accountId;
     private TransactionType action;
-    private Double usdAmount;
-    private Double stockAmount;
-    private String symbol;
     private TransactionStatus status;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double usdAmount;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double stockAmount;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String symbol;
 
     public Transaction() {
         this.createdUtc = new Date();
@@ -26,22 +28,14 @@ public class Transaction {
         this.usdAmount = 0.0;
     }
 
-    public Map<String, String> getData() {
-        Hashtable<String, String> response  = new Hashtable<>();
-        response.put("id", this.id);
-        response.put("createdUtc", this.createdUtc.toString());
-        response.put("status", this.status.toString());
-        response.put("action", this.action.toString());
-        response.put("accountId", this.accountId);
-        if (this.action == TransactionType.DEPOSIT || this.action == TransactionType.WITHDRAW) {
-            response.put("usdAmount", this.usdAmount.toString());
-        } else if (this.action == TransactionType.BUY || this.action == TransactionType.SELL) {
-            response.put("symbol", this.symbol);
-            response.put("usdAmount", this.usdAmount.toString());
-            response.put("stockAmount", this.stockAmount.toString());
-        }
-        return response;
-    }
+    public String getId() {return this.id;}
+    public Date getCreatedUtc() {return this.createdUtc;}
+    public String getAccountId() {return this.accountId;}
+    public TransactionType getAction() {return this.action;}
+    public Double getUsdAmount() {return this.usdAmount;}
+    public Double getStockAmount() {return this.stockAmount;}
+    public String getSymbol() {return this.symbol;}
+    public TransactionStatus getStatus() {return this.status;}
 
     public void setDeposit(String accountId, double usdAmount) {
         this.action = TransactionType.DEPOSIT;
