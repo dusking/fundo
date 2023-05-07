@@ -40,9 +40,9 @@ public class AccountController {
             throws MissingUserException, AccountCreationException {
         logger.info("Got a create account request");
         User user = this.mongoTemplate.findOne(Query.query(Criteria.where("username")
-                .is(createAccountRequest.username)), User.class);
+                .is(createAccountRequest.ownerName)), User.class);
         if (user == null)
-            throw new MissingUserException(createAccountRequest.username);
+            throw new MissingUserException(createAccountRequest.ownerName);
         return new ResponseEntity<>(accountService.create(user), HttpStatus.CREATED);
     }
 

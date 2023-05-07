@@ -14,25 +14,25 @@ The app uses Spring Data MongoDB.
 
 ## Sample Usage
 
-# Get account
+### Get account
 ```
 curl http://localhost:8080/api/account/645285bb6b663c284296b896
 ```
-# Deposit account
+### Deposit account
 ```
 curl -X POST http://localhost:8080/api/account/deposit/ -H 'content-type: application/json' -d '{"accountId":"645285bb6b663c284296b896", "usdAmount":500}'
 ```
-# Withdraw account
+### Withdraw account
 ```
 curl -X POST http://localhost:8080/api/account/withdraw/ -H 'content-type: application/json' -d '{"accountId":"645285bb6b663c284296b896", "usdAmount":100}'
 ```
-# Buy symbol
+### Buy symbol
 ```
 curl -X POST http://localhost:8080/api/account/buy/ -H 'content-type: application/json' -d '{"accountId":"645285bb6b663c284296b896", "symbol": "AAPL", "usdAmount":100}'
 ```
-# Sell symbol
+### Sell symbol
 ```
-curl -X POST http://localhost:8080/api/account/sell/ -H 'content-type: application/json' -d '{"accountId":"645285bb6b663c284296b896", "symbol": "AAPL", "usdAmount":100}'
+curl -X POST http://localhost:8080/api/account/sell/ -H 'content-type: application/json' -d '{"accountId":"645285bb6b663c284296b896", "symbol": "AAPL", "stockAmount":1.5}'
 ```
 
 ## Running demo

@@ -18,12 +18,12 @@ public class UserController {
 
 	private MongoTemplate mongoTemplate;
 
-	@Value("${app.name}")
 	private String appName;
 
 	@Autowired
-	public UserController(MongoTemplate mongoTemplate) {
+	public UserController(MongoTemplate mongoTemplate, @Value("${app.name}") String appName) {
 		this.mongoTemplate = mongoTemplate;
+		this.appName = appName;
 	}
 
 	User getUser(String username) throws MissingUserException {
