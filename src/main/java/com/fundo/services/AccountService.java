@@ -53,6 +53,7 @@ public class AccountService {
         Transaction transaction = new Transaction();
         transaction.setDeposit(accountId, usdAmount);
         try {
+            // ToDo: Implement db transaction
             Account account = getAccount(accountId);
             account.addUsdAmount(usdAmount);
             transaction.setSuccess();
@@ -72,6 +73,7 @@ public class AccountService {
         Transaction transaction = new Transaction();
         transaction.setWithdraw(accountId, usdAmount);
         try {
+            // ToDo: Implement db transaction
             Account account = getAccount(accountId);
             if (usdAmount > account.getUsdAmount())
                 throw new InsufficientFundsException("Failed to withdraw");
